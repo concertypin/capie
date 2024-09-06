@@ -1,0 +1,73 @@
+name: Generate
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1,5'
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install poetry
+        run: pipx install poetry
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'poetry'
+        
+      - name: Install dependencies
+        run: poetry install --no-root
+      - name: Execute
+        run: poetry run python src/multi.py
+      - name: Commit-push
+        run: |
+          git pull
+          git config --local user.email "[EMAIL_HERE]"
+          git config --local user.name "[NAME_HERE]"
+          git add .
+          git commit -a -m "Auto commited by GitHub Actions"
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          repository: [REPO_NAME_HERE]
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: true
+  deploy:
+    needs: [generate]
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: update crls
+        run: git pull
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: 'crl'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

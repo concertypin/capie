@@ -1,0 +1,4 @@
+ca:
+    key: signwith.key
+    cert: signwith.crt
+ttl: 30

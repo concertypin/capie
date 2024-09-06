@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "crl"
+version = "0.1.0"
+description = ""
+authors = ["hb <55056558+concertypin@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.112.0"
+crlbuilder = "^0.10.2"
+pyopenssl = "^24.2.1"
+pyyaml = "^6.0.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
