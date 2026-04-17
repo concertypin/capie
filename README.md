@@ -19,7 +19,7 @@ Capie simplifies the process of generating CRLs by automating certificate manage
         - You can place your revoked certificate on not `data/[CRL_NAME]` but `data/[CRL_NAME]/*`.
         - Allowed extension is `pem`, `crt`, `cer`, `ca`. Every certificate should be PEM formatted.
         - Place your CA certificate and private key to sign with. It's name should be same as config written at `data/[CRL_NAME]/config.yml`.
-        - Private key should not be encrypted to be read by Github Action.
+        - Private keys should be stored encrypted using the repository KEK and decrypted in CI. Set a GitHub Secret named `CA_KEK` (base64-encoded 32 bytes recommended). Use the provided script `scripts/migrate_encrypt.py` to encrypt existing keys. The Action will warn if plaintext private keys are present in the repository.
     - To publish CRL which is already generated:
         - Place DER-formatted CRL file on `data/[CRL_NAME]/as_is.crl`.
 2. Run Github Action workflows via waiting for cron schedule or via workflow_dispatch.
