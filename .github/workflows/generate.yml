@@ -16,11 +16,18 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    env:
+      CA_KEK: ${{ secrets.CA_KEK }}
     permissions:
       contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Warn if plaintext private keys present
+        run: |
+          if git grep -I -n -E '-----BEGIN (RSA |EC |)PRIVATE KEY-----' >/dev/null 2>&1; then
+            echo "::warning::Plaintext private key detected in repository. Please migrate keys to encrypted format and set the CA_KEK secret."
+          fi
       
       - name: Install poetry
         run: pipx install poetry
@@ -34,7 +41,7 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-root
       - name: Execute
-        run: poetry run python src/multi.py
+        run: poetry run python src/main.py
       - name: Commit-push
         run: |
           git pull

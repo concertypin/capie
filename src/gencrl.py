@@ -7,6 +7,7 @@ import datetime
 from cryptography.x509 import ReasonFlags
 import yaml
 from path import Path
+from crypto_utils import decrypt_if_needed
 
 # Define the directory containing the certificates to revoke
 cert_extensions = {"pem", "crt", "cer", "ca"}
@@ -51,9 +52,10 @@ def invoke(cert_directory: str | Path) -> bytes:
         return (cert_directory + "as_is.crl").read_binary()
 
     config = yaml.safe_load((cert_directory + "config.yml").read())
-    issuer_private_key = serialization.load_pem_private_key(
-        (cert_directory + config["ca"]["key"]).read_binary(), password=None
-    )
+    # Read key bytes and decrypt in-memory if the file is in encrypted format
+    raw_key = (cert_directory + config["ca"]["key"]).read_binary()
+    raw_key = decrypt_if_needed(raw_key)
+    issuer_private_key = serialization.load_pem_private_key(raw_key, password=None)
 
     issuer_certificate = x509.load_pem_x509_certificate(
         (cert_directory + config["ca"]["cert"]).read_binary()
